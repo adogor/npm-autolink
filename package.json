@@ -1,0 +1,30 @@
+{
+  "name": "npm-autolink",
+  "version": "0.1.0",
+  "description": "Automatically create sym links between your dev folder",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "homepage": "https://github.com/adogor/npm-autolink",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/adogor/npm-autolink.git"
+  },
+  "author": {
+    "name": "Adrien Ogor",
+    "email": "adrien.ogor@gmail.com",
+    "url": "http://github.com/adogor/"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^2.9.24",
+    "commander": "^2.8.0",
+    "fs-extra": "^0.18.1",
+    "glob": "^5.0.5",
+    "lodash": "^3.6.0"
+  },
+  "bin": {
+    "npm-autolink": "bin/npm-autolink.js"
+  }
+}
