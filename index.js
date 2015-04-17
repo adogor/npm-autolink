@@ -41,7 +41,9 @@ function getDevPackagesFromPath(autolinkDir) {
                 if (!file) {
                     return;
                 }
-                var package = require(pathIsAbsolute(file) ? file : path.join(autolinkDir, file));
+                var absoluteFilePath = pathIsAbsolute(file) ? file : path.join(autolinkDir, file);
+                var package = require(absoluteFilePath);
+                var dirname = path.dirname(require.resolve(absoluteFilePath));
 
                 var versions = packages[package.name];
                 if (!versions) {
@@ -49,7 +51,7 @@ function getDevPackagesFromPath(autolinkDir) {
                     packages[package.name] = versions;
                 }
                 var currentVersion = versions[package.version];
-                var dirname = path.dirname(file);
+                
                 if (currentVersion && currentVersion !== dirname) {
                     console.warn("version conflict : ", currentVersion, dirname);
                 } else {
