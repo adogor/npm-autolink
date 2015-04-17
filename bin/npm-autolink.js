@@ -12,12 +12,12 @@ program
     .description('list dev packages available')
     .action(function(cmd, options) {
         autolink.getDevPackage()
-            .then(function(packages) {
-                console.log((packages)?packages:'No packages found');
-            })
-            .catch(function(e) {
-                console.error(e);
-            })
+        .then(function(packages) {
+            console.log((packages) ? packages : 'No packages found');
+        })
+        .catch(function(e) {
+            console.error(e);
+        })
     });
 
 program
