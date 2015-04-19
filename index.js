@@ -1,3 +1,5 @@
+'use strict';
+
 var Promise = require('bluebird');
 //Promise.longStackTraces();
 var fs = Promise.promisifyAll(require('fs-extra'));
@@ -15,7 +17,7 @@ AutoLinkNotFound.prototype = Object.create(Error.prototype);
 
 function getDevPackagesFromPath(autolinkDir) {
 
-    autolinkPath = path.join(autolinkDir, '.autolink');
+    var autolinkPath = path.join(autolinkDir, '.autolink');
 
     return fs.readFileAsync(autolinkPath)
         .catch(function() {
@@ -23,14 +25,15 @@ function getDevPackagesFromPath(autolinkDir) {
         })
         .then(function(data) {
 
-            globPatterns = data.toString().split(endOfLine);
+            var globPatterns = data.toString().split(endOfLine);
             return Promise.all(_.map(globPatterns, function(pattern) {
                 if (!pattern) {
                     return;
                 }
 
                 return glob(pattern, {
-                    cwd: autolinkDir
+                    cwd: autolinkDir,
+                    ignore : ['**/node_modules/**', '**/bower_components/**']
                 });
             }))
 
@@ -42,21 +45,22 @@ function getDevPackagesFromPath(autolinkDir) {
                     return;
                 }
                 var absoluteFilePath = pathIsAbsolute(file) ? file : path.join(autolinkDir, file);
-                var package = require(absoluteFilePath);
+                var pack = require(absoluteFilePath);
                 var dirname = path.dirname(require.resolve(absoluteFilePath));
 
-                var versions = packages[package.name];
+                var versions = packages[pack.name];
                 if (!versions) {
                     versions = {};
-                    packages[package.name] = versions;
+                    packages[pack.name] = versions;
                 }
-                var currentVersion = versions[package.version];
+                var currentVersion = versions[pack.version];
                 
                 if (currentVersion && currentVersion !== dirname) {
                     console.warn("version conflict : ", currentVersion, dirname);
                 } else {
-                    versions[package.version] = dirname;
+                    versions[pack.version] = dirname;
                 }
+                //console.log(packages);
             })
             return packages;
         });
@@ -104,9 +108,9 @@ function getDevPackage() {
 }
 
 function getMatches() {
-    var package;
+    var pack;
     try {
-        package = require(path.join(process.cwd(), 'package.json'));
+        pack = require(path.join(process.cwd(), 'package.json'));
     } catch (e) {
         return Promise.reject('No package.json found');
     }
@@ -114,9 +118,9 @@ function getMatches() {
     return getDevPackage().then(function(devPackages) {
         var matches = [];
         _.forOwn(_.merge({},
-            package.dependencies,
-            package.devDependencies,
-            package.optionalDependencies), function(version, name) {
+            pack.dependencies,
+            pack.devDependencies,
+            pack.optionalDependencies), function(version, name) {
             if (devPackages[name]) {
                 var devVersions = _.pairs(devPackages[name]);
                 //TODO : choose best version
