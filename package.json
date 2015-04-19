@@ -1,6 +1,6 @@
 {
   "name": "npm-autolink",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Automatically create sym links between your dev folder",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,8 @@
     "fs-extra": "^0.18.1",
     "glob": "^5.0.5",
     "lodash": "^3.6.0",
-    "path-is-absolute": "^1.0.0"
+    "path-is-absolute": "^1.0.0",
+    "semver": "^4.3.3"
   },
   "bin": {
     "npm-autolink": "bin/npm-autolink.js"

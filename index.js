@@ -8,9 +8,7 @@ var glob = Promise.promisify(require('glob'));
 var endOfLine = require('os').EOL;
 var _ = require('lodash');
 var pathIsAbsolute = require('path-is-absolute');
-
-//var autolinkPath = path.join(getUserHome(), '.autolink');
-
+var semver = require('semver');
 
 function AutoLinkNotFound() {}
 AutoLinkNotFound.prototype = Object.create(Error.prototype);
@@ -33,7 +31,7 @@ function getDevPackagesFromPath(autolinkDir) {
 
                 return glob(pattern, {
                     cwd: autolinkDir,
-                    ignore : ['**/node_modules/**', '**/bower_components/**']
+                    ignore: ['**/node_modules/**', '**/bower_components/**']
                 });
             }))
 
@@ -54,7 +52,7 @@ function getDevPackagesFromPath(autolinkDir) {
                     packages[pack.name] = versions;
                 }
                 var currentVersion = versions[pack.version];
-                
+
                 if (currentVersion && currentVersion !== dirname) {
                     console.warn("version conflict : ", currentVersion, dirname);
                 } else {
@@ -120,19 +118,25 @@ function getMatches() {
         _.forOwn(_.merge({},
             pack.dependencies,
             pack.devDependencies,
-            pack.optionalDependencies), function(version, name) {
+            pack.optionalDependencies), function(range, name) {
             if (devPackages[name]) {
-                var devVersions = _.pairs(devPackages[name]);
-                //TODO : choose best version
-                var devVersion = devVersions[0][0];
-                var devPath = devVersions[0][1];
-
-                matches.push({
-                    name: name,
-                    devVersion: devVersion,
-                    requiredVersion: version,
-                    devPath: devPath
+                var devVersions = _.filter(_.keys(devPackages[name]), function(version) {
+                    return semver.satisfies(version, range);
                 });
+
+                if (devVersions.length) {
+
+                    devVersions = devVersions.sort(semver.rcompare);
+                    var bestVersion = devVersions[0];
+                    var devPath = devPackages[name][bestVersion];
+
+                    matches.push({
+                        name: name,
+                        devVersion: bestVersion,
+                        requiredRange: range,
+                        devPath: devPath
+                    });
+                }
             }
         });
         return matches;
@@ -175,11 +179,6 @@ function linkModules() {
 
             })
         })
-}
-
-
-function getUserHome() {
-    return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
 }
 
 module.exports = {
