@@ -143,10 +143,14 @@ function getMatches() {
     });
 }
 
-function linkModules() {
+function linkModules(moduleName) {
     return getMatches()
         .then(function(matches) {
             _.each(matches, function(match) {
+                console.log(match);
+                if (moduleName && moduleName !== match.name) {
+                    return;
+                }
                 var scopeMatch = match.name.match(/^(@.*)\/.*/);
                 var scope;
                 if (!!scopeMatch) {

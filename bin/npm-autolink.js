@@ -32,6 +32,14 @@ program
             })
     });
 
+program
+  .arguments('<name>')
+  .action(function (name) {
+     autolink.linkModules(name)
+        .catch(function(e) {
+            console.error(e);
+        });
+  });
 
 program.parse(process.argv);
 
