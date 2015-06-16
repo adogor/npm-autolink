@@ -33,6 +33,18 @@ program
     });
 
 program
+    .command('remove [name]')
+    .description('remove link')
+    .action(function(name, options) {
+        autolink.removeLinks(name)
+            .then(function(removedLinks) {
+                console.log("Removed links : ", removedLinks);
+            }).catch(function(e) {
+                console.error(e);
+            })
+    });
+
+program
   .arguments('<name>')
   .action(function (name) {
      autolink.linkModules(name)

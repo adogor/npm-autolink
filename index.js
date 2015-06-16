@@ -10,6 +10,8 @@ var _ = require('lodash');
 var pathIsAbsolute = require('path-is-absolute');
 var semver = require('semver');
 
+var nodeModulesPath = path.join(process.cwd(), 'node_modules');
+
 function AutoLinkNotFound() {}
 AutoLinkNotFound.prototype = Object.create(Error.prototype);
 
@@ -147,24 +149,39 @@ function linkModules(moduleName) {
     return getMatches()
         .then(function(matches) {
             _.each(matches, function(match) {
-                console.log(match);
                 if (moduleName && moduleName !== match.name) {
                     return;
                 }
+                console.log(match);
                 var scopeMatch = match.name.match(/^(@.*)\/.*/);
                 var scope;
                 if (!!scopeMatch) {
                     scope = scopeMatch[1];
                 }
 
-                var nodeModulesPath = path.join(process.cwd(), 'node_modules');
                 var scopedPath = (scope) ? path.join(nodeModulesPath, scope) : nodeModulesPath;
                 var targetPath = path.join(nodeModulesPath, match.name);
                 var sourcePath = match.devPath;
 
-                fs.removeAsync(targetPath)
-                    .catch(function(error) {
-                        //console.log(error);
+                var backPath = targetPath + '.bak';
+
+                fs.lstatAsync(targetPath)
+                    .catch(function(err) {})
+                    .then(function(stat) {
+                        if (!stat) {
+                            return;
+                        }
+                        if (stat.isSymbolicLink()) {
+                            //If symlink alreadu exist then remove it
+                            return fs.removeAsync(targetPath);
+                        } else {
+                            //if real directory, remove backPath and rename
+                            return fs.removeAsync(backPath)
+                                .then(function() {
+                                    return fs.renameAsync(targetPath, backPath);
+                                })
+
+                        }
                     })
                 //Create node directory if doesn't exist.
                 .then(function() {
@@ -185,8 +202,39 @@ function linkModules(moduleName) {
         })
 }
 
+function removeLinks(moduleName) {
+    return fs.readdirAsync(nodeModulesPath)
+        .then(function(files) {
+            return Promise.all(_.map(files, function(fileName) {
+                if (!moduleName || fileName === moduleName) {
+                    var file = path.join(nodeModulesPath, fileName);
+
+                    return fs.lstatAsync(file)
+                        .then(function(stat) {
+                            if (stat.isSymbolicLink()) {
+                                return fs.removeAsync(file)
+                                    .then(function() {
+                                        return fs.renameAsync(file + '.bak', file);
+                                    })
+                                    .catch(function() {})
+                                    .then(function() {
+                                        return file;
+                                    })
+                            }
+                        })
+                }
+            }))
+        })
+        .then(function(res) {
+            return _.filter(res, function(item) {
+                return !!item;
+            })
+        })
+}
+
 module.exports = {
     getDevPackage: getDevPackage,
     getMatches: getMatches,
-    linkModules: linkModules
+    linkModules: linkModules,
+    removeLinks: removeLinks
 }
