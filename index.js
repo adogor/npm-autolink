@@ -1,7 +1,7 @@
 'use strict';
 
 var Promise = require('bluebird');
-//Promise.longStackTraces();
+Promise.longStackTraces();
 var fs = Promise.promisifyAll(require('fs-extra'));
 var path = require('path');
 var glob = Promise.promisify(require('glob'));
@@ -9,6 +9,7 @@ var endOfLine = require('os').EOL;
 var _ = require('lodash');
 var pathIsAbsolute = require('path-is-absolute');
 var semver = require('semver');
+var chalk = require('chalk');
 
 var nodeModulesPath = path.join(process.cwd(), 'node_modules');
 
@@ -47,21 +48,20 @@ function getDevPackagesFromPath(autolinkDir) {
                 var absoluteFilePath = pathIsAbsolute(file) ? file : path.join(autolinkDir, file);
                 var pack = require(absoluteFilePath);
                 var dirname = path.dirname(require.resolve(absoluteFilePath));
-
                 var versions = packages[pack.name];
                 if (!versions) {
                     versions = {};
                     packages[pack.name] = versions;
                 }
                 var currentVersion = versions[pack.version];
-
+                //console.log(pack.name, pack.version, dirname);
                 if (currentVersion && currentVersion !== dirname) {
-                    console.warn("version conflict : ", currentVersion, dirname);
+                    console.log(chalk.red("version conflict : ", currentVersion, dirname));
                 } else {
                     versions[pack.version] = dirname;
                 }
                 //console.log(packages);
-            })
+            });
             return packages;
         });
 }
@@ -87,13 +87,17 @@ function getDevPackage() {
                 if (res.isFulfilled()) {
                     autoLinkFound = true;
                     //console.log(res.value());
-                    _.merge(packages, res.value());
+                    _.merge(packages, res.value(), function(a, b) {
+                        if (_.isString(a)) {
+                            console.log(chalk.red("version conflict : ", a, b));
+                        }
+                    });
                 } else {
                     if (!(res.reason() instanceof AutoLinkNotFound)) {
                         rejections.push(res.reason());
                     }
                 }
-            })
+            });
 
             if (autoLinkFound) {
                 return packages;
@@ -148,11 +152,10 @@ function getMatches() {
 function linkModules(moduleName) {
     return getMatches()
         .then(function(matches) {
-            _.each(matches, function(match) {
+            return Promise.all(_.reduce(matches, function(res, match) {
                 if (moduleName && moduleName !== match.name) {
-                    return;
+                    return res;
                 }
-                console.log(match);
                 var scopeMatch = match.name.match(/^(@.*)\/.*/);
                 var scope;
                 if (!!scopeMatch) {
@@ -165,7 +168,7 @@ function linkModules(moduleName) {
 
                 var backPath = targetPath + '.bak';
 
-                fs.lstatAsync(targetPath)
+                res.push(fs.lstatAsync(targetPath)
                     .catch(function(err) {})
                     .then(function(stat) {
                         if (!stat) {
@@ -183,52 +186,79 @@ function linkModules(moduleName) {
 
                         }
                     })
-                //Create node directory if doesn't exist.
-                .then(function() {
-                    return fs.mkdirsAsync(scopedPath);
-                })
-                //Create symlink
-                .then(function() {
-                    return fs.symlinkAsync(sourcePath, targetPath);
-                })
+                    //Create node directory if doesn't exist.
                     .then(function() {
-                        console.log('Symlink', targetPath, ' -> ', sourcePath);
+                        return fs.mkdirsAsync(scopedPath);
                     })
-                    .catch(function(e) {
-                        console.error(e);
-                    });
-
-            })
+                    //Create symlink
+                    .then(function() {
+                        return fs.symlinkAsync(sourcePath, targetPath);
+                    })
+                    .then(function() {
+                        return {
+                            target: sourcePath,
+                            path: targetPath,
+                            added : true,
+                            version : match.devVersion
+                        }
+                    }))
+                    return res;
+            }, []))
         })
 }
 
 function removeLinks(moduleName) {
+    return listLinks().then(function(links) {
+        return Promise.all(_.reduce(links, function(res, link) {
+                var linkName = path.basename(link.path);
+                if (!moduleName || linkName === moduleName) {
+                    res.push(fs.removeAsync(link.path)
+                        .then(function() {
+                            return fs.renameAsync(link.path + '.bak', link.path);
+                        })
+                        .catch(function() {})
+                        .then(function() {
+                            link.removed = true;
+                        }));
+                }
+                return res;
+            }, []))
+            .then(function() {
+                return links;
+            });
+    });
+}
+
+function listLinks() {
     return fs.readdirAsync(nodeModulesPath)
         .then(function(files) {
-            return Promise.all(_.map(files, function(fileName) {
-                if (!moduleName || fileName === moduleName) {
-                    var file = path.join(nodeModulesPath, fileName);
+            return Promise.settle(_.map(files, function(fileName) {
+                var file = path.join(nodeModulesPath, fileName);
 
-                    return fs.lstatAsync(file)
-                        .then(function(stat) {
-                            if (stat.isSymbolicLink()) {
-                                return fs.removeAsync(file)
-                                    .then(function() {
-                                        return fs.renameAsync(file + '.bak', file);
-                                    })
-                                    .catch(function() {})
-                                    .then(function() {
-                                        return file;
-                                    })
-                            }
-                        })
-                }
+                return fs.lstatAsync(file)
+                    .then(function(stat) {
+                        if (stat.isSymbolicLink()) {
+                            return fs.readlinkAsync(file);
+                        } else {
+                            return Promise.reject();
+                        }
+                    })
+                    .then(function(linkTarget) {
+                        return {
+                            path: file,
+                            target: linkTarget,
+                            version: require(path.join(linkTarget, 'package.json')).version
+                        }
+                    })
             }))
         })
         .then(function(res) {
-            return _.filter(res, function(item) {
-                return !!item;
-            })
+            return _.reduce(res, function(links, item) {
+                if (item.isFulfilled()) {
+                    links.push(item.value());
+                }
+                return links;
+            }, [])
         })
 }
 
@@ -236,5 +266,6 @@ module.exports = {
     getDevPackage: getDevPackage,
     getMatches: getMatches,
     linkModules: linkModules,
-    removeLinks: removeLinks
+    removeLinks: removeLinks,
+    listLinks: listLinks
 }
