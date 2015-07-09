@@ -74,7 +74,7 @@ function getDevPackage() {
     do {
         currentDir = path.dirname(currentDir);
         promises.push(getDevPackagesFromPath(currentDir));
-    } while (currentDir !== '/')
+    } while (currentDir !== '/');
 
 
     return Promise.settle(promises)
@@ -86,7 +86,6 @@ function getDevPackage() {
             _.each(results, function(res) {
                 if (res.isFulfilled()) {
                     autoLinkFound = true;
-                    //console.log(res.value());
                     _.merge(packages, res.value(), function(a, b) {
                         if (_.isString(a)) {
                             console.log(chalk.red("version conflict : ", a, b));

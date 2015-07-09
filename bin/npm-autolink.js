@@ -13,24 +13,80 @@ program.description('Npm autolinking feature');
 
 program
     .command('list')
-    .description('list dev packages available')
+    .description('List dev packages available')
     .action(function(cmd, options) {
         autolink.getDevPackage()
             .then(function(packages) {
-                console.log(chalk.red((packages) ? packages : 'No packages found'));
+                if (!packages) {
+                    console.log(chalk.red('No packages found'));
+                }
+                var table = new Table();
+
+                _.forOwn(packages, function(value, name) {
+                    //var style = chalk.black;
+                    var versionTable = new Table({
+                        chars: {
+                            'top': '',
+                            'top-mid': '',
+                            'top-left': '',
+                            'top-right': '',
+                            'bottom': '',
+                            'bottom-mid': '',
+                            'bottom-left': '',
+                            'bottom-right': '',
+                            'left': '',
+                            'left-mid': '',
+                            'mid': '',
+                            'mid-mid': '',
+                            'right': '',
+                            'right-mid': '',
+                            'middle': ' '
+                        },
+                        style: {
+                            'padding-left': 0,
+                            'padding-right': 0
+                        }
+                    });
+                    _.forOwn(value, function(path, version) {
+                        var obj = {};
+                        obj[version] = path;
+                        versionTable.push(obj);
+                    });
+
+                    var obj = {};
+                    obj[name] = versionTable.toString();
+                    table.push(obj);
+                });
+
+                console.log(table.toString());
             })
             .catch(function(e) {
                 console.error(e);
-            })
+            });
     });
 
 program
     .command('matches')
-    .description('list packages matches that will be linked')
+    .description('List packages that can be linked')
     .action(function(cmd, options) {
         autolink.getMatches()
             .then(function(packages) {
-                console.log(chalk.orange((packages) ? packages : 'No matches found'));
+                if (!packages || !packages.length) {
+                    console.log(chalk.red('No matches found'));
+                }
+                var table = new Table({
+                    head: ['Name', 'Semver Range', 'Match path', 'Match version']
+                });
+                _.each(packages, function(pack) {
+                    var style = chalk.black;
+                    table.push([style(pack.name),
+                        style(pack.requiredRange),
+                        style(pack.devPath),
+                        style(pack.devVersion)
+                    ]);
+                });
+
+                console.log(table.toString());
             }).catch(function(e) {
                 console.error(e);
             })
@@ -38,7 +94,7 @@ program
 
 program
     .command('link [name]')
-    .description('add link')
+    .description('Add link, id no name provided link all matches')
     .action(function(name, options) {
         autolink.linkModules(name)
             .then(function(links) {
@@ -58,7 +114,7 @@ function displayLinks(links) {
         var style = chalk.black;
         if (link.removed) {
             style = chalk.red.strikethrough;
-        }else if (link.added) {
+        } else if (link.added) {
             style = chalk.bold.blue;
         }
         table.push([style(path.basename(link.path)), style(link.target), style(link.version)]);
