@@ -17,12 +17,13 @@ program
     .action(function(cmd, options) {
         autolink.getDevPackage()
             .then(function(packages) {
+                //console.log(packages);
                 if (!packages) {
                     console.log(chalk.red('No packages found'));
                 }
                 var table = new Table();
 
-                _.forOwn(packages, function(value, name) {
+                _.forOwn(packages, function(versions, name) {
                     //var style = chalk.black;
                     var versionTable = new Table({
                         chars: {
@@ -47,9 +48,9 @@ program
                             'padding-right': 0
                         }
                     });
-                    _.forOwn(value, function(path, version) {
+                    _.forOwn(versions, function(value, version) {
                         var obj = {};
-                        obj[version] = path;
+                        obj[version] = value.path;
                         versionTable.push(obj);
                     });
 
@@ -88,8 +89,8 @@ program
 
                 console.log(table.toString());
             }).catch(function(e) {
-                console.error(e);
-            })
+                console.error(e.stack);
+            });
     });
 
 program

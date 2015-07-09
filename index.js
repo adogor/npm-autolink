@@ -36,7 +36,7 @@ function getDevPackagesFromPath(autolinkDir) {
                     cwd: autolinkDir,
                     ignore: ['**/node_modules/**', '**/bower_components/**']
                 });
-            }))
+            }));
 
         })
         .then(function(files) {
@@ -55,10 +55,13 @@ function getDevPackagesFromPath(autolinkDir) {
                 }
                 var currentVersion = versions[pack.version];
                 //console.log(pack.name, pack.version, dirname);
-                if (currentVersion && currentVersion !== dirname) {
+                if (currentVersion && currentVersion.path !== dirname) {
                     console.log(chalk.red("version conflict : ", currentVersion, dirname));
                 } else {
-                    versions[pack.version] = dirname;
+                    versions[pack.version] = {
+                        path: dirname,
+                        package: pack
+                    };
                 }
                 //console.log(packages);
             });
@@ -86,9 +89,10 @@ function getDevPackage() {
             _.each(results, function(res) {
                 if (res.isFulfilled()) {
                     autoLinkFound = true;
+                    //console.log(res.value())
                     _.merge(packages, res.value(), function(a, b) {
-                        if (_.isString(a)) {
-                            console.log(chalk.red("version conflict : ", a, b));
+                        if (a && _.isString(a.path)) {
+                            console.log(chalk.red("version conflict : ", a.path, b.path));
                         }
                     });
                 } else {
@@ -133,13 +137,14 @@ function getMatches() {
 
                     devVersions = devVersions.sort(semver.rcompare);
                     var bestVersion = devVersions[0];
-                    var devPath = devPackages[name][bestVersion];
+                    var matchPackage = devPackages[name][bestVersion];
 
                     matches.push({
                         name: name,
                         devVersion: bestVersion,
                         requiredRange: range,
-                        devPath: devPath
+                        devPath: matchPackage.path,
+                        bin: matchPackage.package.bin
                     });
                 }
             }
@@ -152,58 +157,91 @@ function linkModules(moduleName) {
     return getMatches()
         .then(function(matches) {
             return Promise.all(_.reduce(matches, function(res, match) {
-                if (moduleName && moduleName !== match.name) {
-                    return res;
+                if (!moduleName || moduleName === match.name) {
+                    res.push(linkModule(match));
                 }
-                var scopeMatch = match.name.match(/^(@.*)\/.*/);
-                var scope;
-                if (!!scopeMatch) {
-                    scope = scopeMatch[1];
-                }
+                return res;
+            }, []));
+        });
+}
 
-                var scopedPath = (scope) ? path.join(nodeModulesPath, scope) : nodeModulesPath;
-                var targetPath = path.join(nodeModulesPath, match.name);
-                var sourcePath = match.devPath;
+function linkModule(match) {
+    var scopeMatch = match.name.match(/^(@.*)\/.*/);
+    var scope;
+    if (!!scopeMatch) {
+        scope = scopeMatch[1];
+    }
 
-                var backPath = targetPath + '.bak';
+    var scopedPath = (scope) ? path.join(nodeModulesPath, scope) : nodeModulesPath;
+    var targetPath = path.join(nodeModulesPath, match.name);
+    var binPath = path.join(nodeModulesPath, '.bin');
+    var sourcePath = match.devPath;
 
-                res.push(fs.lstatAsync(targetPath)
-                    .catch(function(err) {})
-                    .then(function(stat) {
-                        if (!stat) {
-                            return;
-                        }
-                        if (stat.isSymbolicLink()) {
-                            //If symlink alreadu exist then remove it
-                            return fs.removeAsync(targetPath);
-                        } else {
-                            //if real directory, remove backPath and rename
-                            return fs.removeAsync(backPath)
-                                .then(function() {
-                                    return fs.renameAsync(targetPath, backPath);
-                                })
+    var backPath = targetPath + '.bak';
 
-                        }
-                    })
-                    //Create node directory if doesn't exist.
+    return fs.lstatAsync(targetPath)
+        .catch(function(err) {})
+        .then(function(stat) {
+            if (!stat) {
+                return;
+            }
+            if (stat.isSymbolicLink()) {
+                //If symlink alreadu exist then remove it
+                return fs.removeAsync(targetPath);
+            } else {
+                //if real directory, remove backPath and rename
+
+                return fs.removeAsync(backPath)
                     .then(function() {
-                        return fs.mkdirsAsync(scopedPath);
-                    })
-                    //Create symlink
-                    .then(function() {
-                        return fs.symlinkAsync(sourcePath, targetPath);
-                    })
-                    .then(function() {
-                        return {
-                            target: sourcePath,
-                            path: targetPath,
-                            added : true,
-                            version : match.devVersion
-                        }
-                    }))
-                    return res;
-            }, []))
+                        return fs.renameAsync(targetPath, backPath);
+                    });
+
+            }
         })
+        //Create node directory if doesn't exist.
+        .then(function() {
+            return fs.ensureDirAsync(scopedPath);
+        })
+        //Create symlink
+        .then(function() {
+            return fs.symlinkAsync(sourcePath, targetPath);
+        })
+        .then(function() {
+            if (match.bin) {
+                return fs.ensureDirAsync(binPath)
+                    .then(function() {
+                        return linkBins(binPath, match.bin, sourcePath);
+                    });
+            }
+        })
+        .then(function() {
+            return {
+                target: sourcePath,
+                path: targetPath,
+                added: true,
+                version: match.devVersion,
+                bins: (match.bin) ? _.keys(match.bin) : ''
+            };
+        });
+}
+
+function linkBins(binPath, bins, sourcePath) {
+    return Promise.all(_.reduce(bins, function(res, bin, binName) {
+        var sourceBin = path.join(sourcePath, bin);
+        var targetLink = path.join(binPath, binName);
+        //var bakTargetLink = path.join(binPath, binName) + '.bak';
+
+        var promise = fs.removeAsync(targetLink)
+            .then(function() {
+                return fs.symlinkAsync(sourceBin, targetLink);
+            })
+            .then(function() {
+                return fs.chmodAsync(targetLink, '755');
+            });
+
+        res.push(promise);
+        return res;
+    }, []));
 }
 
 function removeLinks(moduleName) {
@@ -247,9 +285,9 @@ function listLinks() {
                             path: file,
                             target: linkTarget,
                             version: require(path.join(linkTarget, 'package.json')).version
-                        }
-                    })
-            }))
+                        };
+                    });
+            }));
         })
         .then(function(res) {
             return _.reduce(res, function(links, item) {
@@ -257,8 +295,8 @@ function listLinks() {
                     links.push(item.value());
                 }
                 return links;
-            }, [])
-        })
+            }, []);
+        });
 }
 
 module.exports = {
@@ -267,4 +305,4 @@ module.exports = {
     linkModules: linkModules,
     removeLinks: removeLinks,
     listLinks: listLinks
-}
+};
