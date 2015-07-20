@@ -267,7 +267,10 @@ function removeLinks(moduleName) {
 }
 
 function listLinks() {
-    return fs.readdirAsync(nodeModulesPath)
+    return fs.ensureDirAsync(nodeModulesPath)
+        .then(function() {
+            fs.readdirAsync(nodeModulesPath);
+        })
         .then(function(files) {
             return Promise.settle(_.map(files, function(fileName) {
                 var file = path.join(nodeModulesPath, fileName);
