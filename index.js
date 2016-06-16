@@ -70,14 +70,16 @@ function getDevPackagesFromPath(autolinkDir) {
 }
 
 function getDevPackage() {
-    var currentDir = process.cwd();
+    var currentDir = path.dirname(process.cwd());
+    var oldDir = null;
 
     var promises = [];
     promises.push(getDevPackagesFromPath(currentDir));
     do {
-        currentDir = path.dirname(currentDir);
         promises.push(getDevPackagesFromPath(currentDir));
-    } while (currentDir !== '/');
+        oldDir = currentDir;
+        currentDir = path.dirname(currentDir);
+    } while (currentDir !== '/' && oldDir !== currentDir);
 
 
     return Promise.settle(promises)
