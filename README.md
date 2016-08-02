@@ -1,4 +1,4 @@
-#npm-autolink
+# npm-autolink
 
 ## Description
 - Automatically create sym links between your dev folder of node modules
@@ -10,29 +10,32 @@
 - One line per pattern
 - Glob patterns relatives to autolink dir
 
-Exemple, .autolink : 
+Example .autolink file:
 ```
 dev/*/package.json
 dev/bigproject/*/package.json
 ```
 
-## Usage :
+## Usage
 
-```
-Usage: npm-autolink [options] [command]
+`npm-autolink [command] [options]`
 
-Sub-commands:
+```sh
+# Print usage information
+$ npm-autolink -h
+$ npm-autolink --help
 
-  list      list dev packages available
-  matches   list packages matches that will be linked
+# List available dev packages
+$ npm-autolink list
 
-Npm autolinking feature
+# List packages matches that will be linked
+$ npm-autolink matches
 
-Options:
+# Link node modules. Optional [id]
+$ npm-autolink link [id]
 
-  -h, --help  output usage information
-
-
+# Remove symlinks. Optional [id]
+$ npm-autolink remove [id]
 ```
 
 ## TODO :
