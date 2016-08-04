@@ -22,14 +22,12 @@ function getNodeModulesPath() {
 function getDevPackagesFromPath(autolinkDir) {
 
   var autolinkPath = path.join(autolinkDir, '.autolink');
-  //console.log(autolinkPath)
 
   return fs.readFileAsync(autolinkPath)
     .catch(function() {
       return Promise.reject(new AutoLinkNotFound("Error reading .autolink file : " + autolinkPath));
     })
     .then(function(data) {
-      //console.log(data)
       var globPatterns = data.toString().split(endOfLine);
       return Promise.all(_.map(globPatterns, function(pattern) {
         if (!pattern) {
@@ -59,7 +57,6 @@ function getDevPackagesFromPath(autolinkDir) {
           packages[pack.name] = versions;
         }
         var currentVersion = versions[pack.version];
-        //console.log(pack.name, pack.version, dirname);
         if (currentVersion && currentVersion.path !== dirname) {
           console.log(chalk.red("version conflict : ", currentVersion.path, dirname));
         } else {
@@ -68,16 +65,13 @@ function getDevPackagesFromPath(autolinkDir) {
             package: pack
           };
         }
-      //console.log(packages);
       });
       return packages;
     });
 }
 
 function getDevPackage() {
-  //console.log('liste : ', require('fs').readdirSync(process.cwd()));
   var currentDir = process.cwd();
-  //console.log(currentDir)
   var promises = [];
   promises.push(getDevPackagesFromPath(currentDir));
   do {
@@ -95,7 +89,6 @@ function getDevPackage() {
       _.each(results, function(res) {
         if (res.isFulfilled()) {
           autoLinkFound = true;
-          //console.log(res.value())
           _.merge(packages, res.value(), function(a, b) {
             if (a && _.isString(a.path) && a.path !== b.path) {
               console.log(chalk.red("version conflict : ", a.path, b.path));
@@ -136,7 +129,6 @@ function getMatches() {
       pack.optionalDependencies), function(range, name) {
       if (devPackages[name]) {
         var devVersions = _.filter(_.keys(devPackages[name]), function(version) {
-          //console.log(version, range);
           return semver.satisfies(version, range);
         });
 
@@ -145,7 +137,6 @@ function getMatches() {
           devVersions = devVersions.sort(semver.rcompare);
           var bestVersion = devVersions[0];
           var matchPackage = devPackages[name][bestVersion];
-          //console.log(matchPackage.package)
           matches.push({
             name: name,
             devVersion: bestVersion,
@@ -208,7 +199,6 @@ function linkModule(match) {
     })
     //Create node directory if doesn't exist.
     .then(function() {
-      console.log(scopedPath)
       return fs.ensureDirAsync(scopedPath);
     })
     //Create symlink
@@ -275,15 +265,21 @@ function removeLinks(moduleName) {
   });
 }
 
-function listLinks() {
-  const nodeModulesPath = getNodeModulesPath();
-  return fs.ensureDirAsync(nodeModulesPath)
+function listLinks(directory) {
+  if (!directory) {
+    directory = getNodeModulesPath();
+  }
+  return fs.ensureDirAsync(directory)
     .then(function() {
-      return fs.readdirAsync(nodeModulesPath);
+      return fs.readdirAsync(directory);
     })
     .then(function(files) {
       return Promise.settle(_.map(files, function(fileName) {
-        var file = path.join(nodeModulesPath, fileName);
+        var file = path.join(directory, fileName);
+
+        if (fileName[0] === '@') {
+          return listLinks(file);
+        }
 
         return fs.lstatAsync(file)
           .then(function(stat) {
@@ -303,12 +299,12 @@ function listLinks() {
       }));
     })
     .then(function(res) {
-      return _.reduce(res, function(links, item) {
+      return _.flatten(_.reduce(res, function(links, item) {
         if (item.isFulfilled()) {
           links.push(item.value());
         }
         return links;
-      }, []);
+      }, []));
     });
 }
 

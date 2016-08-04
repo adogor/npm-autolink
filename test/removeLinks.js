@@ -74,34 +74,18 @@ describe('list & remove', function() {
 
   describe('listLinks', () => {
     it('must list every linked module for current module', () => {
-      utils.init(modules).with({
-        '/moduleTmp': {
-          'package.json': {
-            name: 'module3',
-            version: '0.3.0'
-          }
+      return expect(autoLink.listLinks()).to.eventually.deep.include.members([
+        {
+          path: '/var/module1/node_modules/module3',
+          target: '/moduleTmp',
+          version: '0.3.0'
         },
-        '/var/module1': {
-          'package.json': {
-            dependencies: {
-              'module3': '0.3.0',
-              '@test/module2': '*'
-            }
-          },
-          'node_modules': {
-            'module3': mockFs.symlink({
-              path: '/moduleTmp'
-            })
-          }
+        {
+          "path": "/var/module1/node_modules/@test/module2",
+          "target": "/moduleTmp2",
+          "version": "0.2.0"
         }
-      }).withCwd('/var/module1').apply();
-
-      // FIXME
-      return expect(autoLink.listLinks()).to.eventually.deep.equal([{
-        path: '/var/module1/node_modules/module3',
-        target: '/moduleTmp',
-        version: '0.3.0'
-      }])
+      ])
     });
   })
 
