@@ -4,7 +4,8 @@
   "description": "Automatically create sym links between your dev folder",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --reporter spec --bail --check-leaks test/",
+    "test:cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/"
   },
   "homepage": "https://github.com/adogor/npm-autolink",
   "repository": {
@@ -22,11 +23,21 @@
     "chalk": "^1.0.0",
     "cli-table": "^0.3.1",
     "commander": "^2.8.0",
-    "fs-extra": "^0.18.1",
+    "fs-extra": "^0.30.0",
     "glob": "^5.0.5",
     "lodash": "^3.6.0",
     "path-is-absolute": "^1.0.0",
     "semver": "^4.3.3"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.3.0",
+    "esformatter": "^0.9.6",
+    "istanbul": "^0.4.4",
+    "mocha": "^3.0.0",
+    "mock-fs": "^3.11.0",
+    "pmock": "^0.2.3",
+    "sinon": "^1.17.5"
   },
   "bin": {
     "npm-autolink": "bin/npm-autolink.js"
