@@ -90,7 +90,7 @@ function getDevPackage() {
       _.each(results, function(res) {
         if (res.isFulfilled()) {
           autoLinkFound = true;
-          _.merge(packages, res.value(), function(a, b) {
+          _.mergeWith(packages, res.value(), function(a, b) {
             if (a && _.isString(a.path) && a.path !== b.path) {
               console.log(chalk.red("version conflict : ", a.path, b.path));
             }
