@@ -54,7 +54,7 @@ describe('linkModules', function() {
 
       var stats = fs.lstatSync('/var/module1/node_modules/module3');
       expect(stats.isSymbolicLink()).to.be.true;
-      expect(fs.readlinkSync('/var/module1/node_modules/module3')).to.equal('/module3')
+      expect(fs.readlinkSync('/var/module1/node_modules/module3')).to.equal(utils.convertPathToSystem('/module3'))
     });
   });
 

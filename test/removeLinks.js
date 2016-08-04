@@ -76,12 +76,12 @@ describe('list & remove', function() {
     it('must list every linked module for current module', () => {
       return expect(autoLink.listLinks()).to.eventually.deep.include.members([
         {
-          path: '/var/module1/node_modules/module3',
+          path: utils.convertPathToSystem('/var/module1/node_modules/module3'),
           target: '/moduleTmp',
           version: '0.3.0'
         },
         {
-          "path": "/var/module1/node_modules/@test/module2",
+          "path": utils.convertPathToSystem("/var/module1/node_modules/@test/module2"),
           "target": "/moduleTmp2",
           "version": "0.2.0"
         }

@@ -1,6 +1,7 @@
 'use strict';
 const mockFs = require('mock-fs');
 const _ = require('lodash');
+const os = require('os');
 
 function transformConfig(config) {
   return _.chain(config)
@@ -61,3 +62,10 @@ exports.mockFsWithCwd = function(config, cwd) {
 exports.restoreFs = function() {
   mockFs.restore();
 }
+
+exports.convertPathToSystem = function(filename) {
+  if (os.platform() !== 'win32') {
+      return filename;
+  }
+  return 'C:'+filename.replace(/\//g, '\\');
+  }

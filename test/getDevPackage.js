@@ -5,6 +5,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiAsPromised = require('chai-as-promised');
 const _ = require('lodash');
+const endOfLine = require('os').EOL;
 chai.use(chaiAsPromised);
 
 const modules = {
@@ -58,7 +59,7 @@ describe('GetDevPackages', function() {
             "name": "module1",
             "version": "0.1.0"
           },
-          "path": "/var/module1"
+          "path": utils.convertPathToSystem("/var/module1")
         }
       }
     });
@@ -67,7 +68,7 @@ describe('GetDevPackages', function() {
   it('should scan multiple entries', () => {
     utils.mockFsWithCwd(_.assign({
       '/var/': {
-        '.autolink': 'module1/package.json\nmodule2/package.json'
+        '.autolink': 'module1/package.json'+endOfLine+'module2/package.json'
       }
     }, modules), '/var/');
     return expect(autoLink.getDevPackage()).to.eventually.deep.equal({
@@ -77,7 +78,7 @@ describe('GetDevPackages', function() {
             "name": "module1",
             "version": "0.1.0"
           },
-          "path": "/var/module1"
+          "path": utils.convertPathToSystem("/var/module1")
         }
       },
       "@test/module2": {
@@ -86,7 +87,7 @@ describe('GetDevPackages', function() {
             "name": "@test/module2",
             "version": "0.2.0"
           },
-          "path": "/var/module2"
+          "path": utils.convertPathToSystem("/var/module2")
         }
       }
     });

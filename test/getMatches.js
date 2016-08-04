@@ -58,7 +58,7 @@ describe('getMatches', function() {
     var res = [
       {
         "bin": undefined,
-        "devPath": "/module3",
+        "devPath": utils.convertPathToSystem("/module3"),
         "devVersion": "0.3.0",
         "name": "module3",
         "requiredRange": "0.3.0"
@@ -164,7 +164,7 @@ describe('getMatches', function() {
       return expect(autoLink.getMatches()).to.eventually.deep.equal([
         {
           "bin": undefined,
-          "devPath": "/module3",
+          "devPath": utils.convertPathToSystem("/module3"),
           "devVersion": "1.5.0",
           "name": "module3",
           "requiredRange": "^1.0.0"
@@ -184,7 +184,7 @@ describe('getMatches', function() {
       }).withCwd('/var/module1').apply();
       return expect(autoLink.getMatches()).to.eventually.deep.equal([{
         "bin": undefined,
-        "devPath": "/module3",
+        "devPath": utils.convertPathToSystem("/module3"),
         "devVersion": "0.3.0",
         "name": "module3",
         "requiredRange": "*"
@@ -209,7 +209,7 @@ describe('getMatches', function() {
       }).withCwd('/var/module1').apply();
       return expect(autoLink.getMatches()).to.eventually.deep.equal([{
         "bin": undefined,
-        "devPath": "/module3b",
+        "devPath": utils.convertPathToSystem("/module3b"),
         "devVersion": "2.0.1",
         "name": "module3",
         "requiredRange": "*"
