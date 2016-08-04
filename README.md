@@ -1,4 +1,7 @@
 # npm-autolink
+Npm link done right
+
+[![Windows Build][https://img.shields.io/appveyor/ci/adogor/npm-autolink/master.svg?label=windows]][https://ci.appveyor.com/project/adogor/npm-autolink]
 
 ## Description
 - Automatically create sym links between your dev folder of node modules
