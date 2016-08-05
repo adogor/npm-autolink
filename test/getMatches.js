@@ -1,6 +1,6 @@
 import * as utils from './support/utils';
 import fs from 'fs-extra';
-import autoLink from '../';
+import autoLink from '../src/';
 import chai from 'chai';
 const expect = chai.expect;
 import chaiAsPromised from 'chai-as-promised';

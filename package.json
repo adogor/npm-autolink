@@ -2,11 +2,13 @@
   "name": "npm-autolink",
   "version": "0.4.0-dev",
   "description": "Npm link done right, automatically create symlinks between your dev folder",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "mocha --compilers js:babel-register --reporter spec --bail --check-leaks test/",
     "test:cov": "babel-node ./node_modules/istanbul/lib/cli.js cover _mocha -- --reporter dot --check-leaks test/",
-    "test:ci": "babel-node ./node_modules/istanbul/lib/cli.js cover _mocha --report lcovonly -- --reporter spec --check-leaks test/"
+    "test:ci": "babel-node ./node_modules/istanbul/lib/cli.js cover _mocha --report lcovonly -- --reporter spec --check-leaks test/",
+    "build": "babel -d dist/ src/",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "npm",
@@ -52,6 +54,6 @@
     "sinon": "^1.17.5"
   },
   "bin": {
-    "npm-autolink": "bin/npm-autolink.js"
+    "npm-autolink": "dist/npm-autolink.js"
   }
 }
