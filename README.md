@@ -9,7 +9,7 @@ Npm link done right
 
 
 ## Description
-When developping multiple node modules it is cumbersome to publish one module to test it in other modules. [Npm link](https://docs.npmjs.com/cli/link) is handy in these cases but can be a bit slow (everything is installed globally) and doens't cover everything.
+When developping multiple node modules it is cumbersome to publish one module to test it in other modules. [Npm link](https://docs.npmjs.com/cli/link) is handy in these cases but can be a bit slow (everything is installed globally) and doesn't cover everything.
 
 **Npm-autolink** come to the rescue by permitting direct links between dev folders.
 
