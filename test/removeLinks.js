@@ -1,12 +1,12 @@
-const mockFs = require('mock-fs');
-const utils = require('./support/utils');
-const fs = require('fs-extra');
-const autoLink = require('../');
-const chai = require('chai');
+import mockFs from 'mock-fs';
+import * as utils from './support/utils';
+import fs from 'fs-extra';
+import autoLink from '../';
+import chai from 'chai';
 const expect = chai.expect;
-const chaiAsPromised = require('chai-as-promised');
-const _ = require('lodash');
-const sinon = require('sinon');
+import chaiAsPromised from 'chai-as-promised';
+import _ from 'lodash';
+import Promise from 'bluebird';
 chai.use(chaiAsPromised);
 
 const modules = {
@@ -31,9 +31,7 @@ const modules = {
   '/.autolink': '**/package.json'
 };
 
-//console.log(fs.readdirSync('/'));
-
-describe('list & remove', function() {
+describe('list & remove', () => {
 
   beforeEach(() => {
     utils.init(modules).with({

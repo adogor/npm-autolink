@@ -1,11 +1,12 @@
-const utils = require('./support/utils');
-const fs = require('fs-extra');
-const autoLink = require('../');
-const chai = require('chai');
+import * as utils from './support/utils';
+import fs from 'fs-extra';
+import autoLink from '../';
+import chai from 'chai';
 const expect = chai.expect;
-const chaiAsPromised = require('chai-as-promised');
-const _ = require('lodash');
-const endOfLine = require('os').EOL;
+import chaiAsPromised from 'chai-as-promised';
+import _ from 'lodash';
+import { EOL as endOfLine } from 'os';
+import Promise from 'bluebird';
 chai.use(chaiAsPromised);
 
 const modules = {
@@ -29,7 +30,7 @@ const modules = {
   }
 }
 
-describe('GetDevPackages', function() {
+describe('GetDevPackages', () => {
 
   afterEach(utils.restoreFs);
 
@@ -68,7 +69,7 @@ describe('GetDevPackages', function() {
   it('should scan multiple entries', () => {
     utils.mockFsWithCwd(_.assign({
       '/var/': {
-        '.autolink': 'module1/package.json'+endOfLine+'module2/package.json'
+        '.autolink': 'module1/package.json' + endOfLine + 'module2/package.json'
       }
     }, modules), '/var/');
     return expect(autoLink.getDevPackage()).to.eventually.deep.equal({
