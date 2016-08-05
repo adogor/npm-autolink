@@ -3,7 +3,6 @@ Npm link done right
 
 [![Npm](https://img.shields.io/npm/v/npm-autolink.svg)](https://npmjs.org/package/npm-autolink)
 [![Npm dependencies](https://img.shields.io/david/adogor/npm-autolink.svg)](https://npmjs.org/package/npm-autolink)
-
 [![Linux Build](https://img.shields.io/travis/adogor/npm-autolink/master.svg?label=linux)](https://travis-ci.org/adogor/npm-autolink)
 [![Windows Build](https://img.shields.io/appveyor/ci/adogor/npm-autolink/master.svg?label=windows)](https://ci.appveyor.com/project/adogor/npm-autolink)
 [![Coverage](https://img.shields.io/coveralls/adogor/npm-autolink/master.svg)](https://coveralls.io/github/adogor/npm-autolink)
