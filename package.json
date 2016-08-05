@@ -1,13 +1,20 @@
 {
   "name": "npm-autolink",
   "version": "0.4.0-dev",
-  "description": "Automatically create sym links between your dev folder",
+  "description": "Npm link done right, automatically create symlinks between your dev folder",
   "main": "index.js",
   "scripts": {
     "test": "mocha --compilers js:babel-register --reporter spec --bail --check-leaks test/",
     "test:cov": "babel-node ./node_modules/istanbul/lib/cli.js cover _mocha -- --reporter dot --check-leaks test/",
     "test:ci": "babel-node ./node_modules/istanbul/lib/cli.js cover _mocha --report lcovonly -- --reporter spec --check-leaks test/"
   },
+  "keywords": [
+    "npm",
+    "link",
+    "symlink",
+    "autolink",
+    "auto"
+  ],
   "homepage": "https://github.com/adogor/npm-autolink",
   "repository": {
     "type": "git",
