@@ -1,6 +1,6 @@
 {
   "name": "npm-autolink",
-  "version": "0.4.0",
+  "version": "0.4.1-dev",
   "description": "Npm link done right, automatically create symlinks between your dev folder",
   "main": "dist/index.js",
   "scripts": {
