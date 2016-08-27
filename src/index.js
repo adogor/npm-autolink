@@ -130,7 +130,7 @@ function getMatches() {
       pack.optionalDependencies), function(range, name) {
       if (devPackages[name]) {
         var devVersions = _.filter(_.keys(devPackages[name]), function(version) {
-          return range.startsWith("git+") || semver.satisfies(version, range);
+          return range.startsWith("git+") || range.startsWith("git://") || semver.satisfies(version, range);
         });
 
         if (devVersions.length) {
