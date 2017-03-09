@@ -204,7 +204,7 @@ function linkModule(match) {
     })
     //Create symlink
     .then(function() {
-      return fs.symlinkAsync(sourcePath, targetPath);
+      return fs.symlinkAsync(sourcePath, targetPath, 'junction');
     })
     .then(function() {
       if (match.bin) {
