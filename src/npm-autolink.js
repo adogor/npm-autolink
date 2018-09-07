@@ -15,7 +15,8 @@ program
   .command('list')
   .description('List dev packages available')
   .action(function(cmd, options) {
-    autolink.getDevPackage()
+    autolink
+      .getDevPackage()
       .then(function(packages) {
         //console.log(packages);
         if (!packages) {
@@ -23,7 +24,7 @@ program
         }
         var table = new Table({
           style: {
-            head: ["bold"],
+            head: ['bold'],
             border: []
           }
         });
@@ -32,26 +33,26 @@ program
           //var style = chalk.black;
           var versionTable = new Table({
             chars: {
-              'top': '',
+              top: '',
               'top-mid': '',
               'top-left': '',
               'top-right': '',
-              'bottom': '',
+              bottom: '',
               'bottom-mid': '',
               'bottom-left': '',
               'bottom-right': '',
-              'left': '',
+              left: '',
               'left-mid': '',
-              'mid': '',
+              mid: '',
               'mid-mid': '',
-              'right': '',
+              right: '',
               'right-mid': '',
-              'middle': ' '
+              middle: ' '
             },
             style: {
               'padding-left': 0,
               'padding-right': 0,
-              head: ["blue", "bold"],
+              head: ['blue', 'bold'],
               border: []
             }
           });
@@ -77,7 +78,8 @@ program
   .command('matches')
   .description('List packages that can be linked')
   .action(function(cmd, options) {
-    autolink.getMatches()
+    autolink
+      .getMatches()
       .then(function(packages) {
         if (!packages || !packages.length) {
           console.log(chalk.red('No matches found'));
@@ -85,13 +87,14 @@ program
         var table = new Table({
           head: ['Name', 'Semver Range', 'Match path', 'Match version'],
           style: {
-            head: ["bold"],
+            head: ['bold'],
             border: []
           }
         });
         _.each(packages, function(pack) {
           var style = chalk.reset;
-          table.push([style(pack.name),
+          table.push([
+            style(pack.name),
             style(pack.requiredRange),
             style(pack.devPath),
             style(pack.devVersion)
@@ -99,16 +102,18 @@ program
         });
 
         console.log(table.toString());
-      }).catch(function(e) {
-      console.error(e.stack);
-    });
+      })
+      .catch(function(e) {
+        console.error(e.stack);
+      });
   });
 
 program
   .command('link [name]')
   .description('Add link, id no name provided link all matches')
   .action(function(name, options) {
-    autolink.linkModules(name)
+    autolink
+      .linkModules(name)
       .then(function(links) {
         displayLinks(links);
       })
@@ -121,7 +126,7 @@ function displayLinks(links) {
   var table = new Table({
     head: ['link', 'target', 'version'],
     style: {
-      head: ["bold"],
+      head: ['bold'],
       border: []
     }
   });
@@ -133,7 +138,11 @@ function displayLinks(links) {
     } else if (link.added) {
       style = chalk.bold.blue;
     }
-    table.push([style(path.basename(link.path)), style(link.target), style(link.version)]);
+    table.push([
+      style(path.basename(link.path)),
+      style(link.target),
+      style(link.version)
+    ]);
   });
 
   console.log(table.toString());
@@ -143,18 +152,21 @@ program
   .command('remove [name]')
   .description('remove link')
   .action(function(name, options) {
-    autolink.removeLinks(name)
+    autolink
+      .removeLinks(name)
       .then(function(links) {
         displayLinks(links);
-      }).catch(function(e) {
-      console.error(e);
-    });
+      })
+      .catch(function(e) {
+        console.error(e);
+      });
   });
 
 program.parse(process.argv);
 
 if (!program.args.length) {
-  autolink.listLinks()
+  autolink
+    .listLinks()
     .then(function(linksList) {
       displayLinks(linksList);
     })
