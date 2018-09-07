@@ -55,6 +55,7 @@
     "sinon": "^6.2.0"
   },
   "bin": {
-    "npm-autolink": "dist/npm-autolink.js"
+    "npm-autolink": "dist/npm-autolink.js",
+    "npmauto": "dist/npm-autolink.js"
   }
 }
