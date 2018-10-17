@@ -257,7 +257,7 @@ async function linkModule(linkConf) {
   }
 
   await fs.ensureDir(scopedPath);
-  await fs.symlink(sourcePath, targetPath);
+  await fs.symlink(sourcePath, targetPath, 'junction');
   await fs.ensureDir(binPath);
   await linkBins(binPath, linkConf.source.bin, sourcePath);
 }
@@ -274,7 +274,7 @@ function linkBins(binPath, bins, sourcePath) {
         var promise = fs
           .remove(targetLink)
           .then(function() {
-            return fs.symlink(sourceBin, targetLink);
+            return fs.symlink(sourceBin, targetLink, 'junction');
           })
           .then(function() {
             return fs.chmod(targetLink, '755');
