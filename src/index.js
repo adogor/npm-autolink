@@ -13,9 +13,6 @@ var chalk = require('chalk');
 
 const AUTOLINK_FILE_NAME = 'autolink.json';
 
-function AutoLinkNotFound() {}
-AutoLinkNotFound.prototype = Object.create(Error.prototype);
-
 function getNodeModulesPath() {
   return path.join(process.cwd(), 'node_modules');
 }
@@ -38,7 +35,8 @@ async function getFirstNpmAutoLinkFile() {
     oldDir = currentDir;
     currentDir = path.dirname(currentDir);
   } while (currentDir !== oldDir);
-  return null;
+
+  throw new Error('Autolink file not found');
 }
 
 function getAutolinkContent(filePath) {
@@ -233,7 +231,6 @@ async function linkModule(linkConf) {
     scope = scopeMatch[1];
   }
   const nodeModulesPath = path.join(linkConf.target.path, 'node_modules');
-  console.log(nodeModulesPath);
   var scopedPath = scope ? path.join(nodeModulesPath, scope) : nodeModulesPath;
   var targetPath = path.join(nodeModulesPath, linkConf.source.name);
   var binPath = path.join(nodeModulesPath, '.bin');
