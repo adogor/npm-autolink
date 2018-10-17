@@ -1,6 +1,6 @@
 {
   "name": "npm-autolink",
-  "version": "0.4.2-dev",
+  "version": "1.0.0-alpha.1",
   "description": "Npm link done right, automatically create symlinks between your dev folder",
   "main": "dist/index.js",
   "scripts": {
@@ -8,6 +8,7 @@
     "test:cov": "babel-node ./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
     "test:ci": "babel-node ./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/",
     "build": "babel -d dist/ src/",
+    "build:watch": "babel -w -d dist/ src/",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -37,13 +38,15 @@
     "glob": "^7.1.3",
     "lodash": "^4.17.10",
     "path-is-absolute": "^1.0.1",
-    "semver": "^5.5.1"
+    "semver": "^5.5.1",
+    "treeify": "^1.1.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
     "babel-register": "^6.26.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
