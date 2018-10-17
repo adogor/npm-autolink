@@ -1,4 +1,5 @@
 # npm-autolink
+
 Npm link done right
 
 [![Npm](https://img.shields.io/npm/v/npm-autolink.svg)](https://npmjs.org/package/npm-autolink)
@@ -7,75 +8,76 @@ Npm link done right
 [![Windows Build](https://img.shields.io/appveyor/ci/adogor/npm-autolink/master.svg?label=windows)](https://ci.appveyor.com/project/adogor/npm-autolink)
 [![Coverage](https://img.shields.io/coveralls/adogor/npm-autolink/master.svg)](https://coveralls.io/github/adogor/npm-autolink)
 
-
 ## Description
+
 When developping multiple node modules it is cumbersome to publish one module to test it in other modules. [Npm link](https://docs.npmjs.com/cli/link) is handy in these cases but can be a bit slow (everything is installed globally) and doesn't cover everything.
 
 **Npm-autolink** come to the rescue by permitting direct links between dev folders.
 
 Main features are :
-- Define your dev node modules paths with *.autolink* files.
-- Automatically create/remove/list symlinks between your node modules
+
+- Define your workspace modules links in _autolink.json_ file.
+- Automatically link or unlink all projects at once
 - bin executables are also linked !
 
+## Breaking change in v1
+
+V1 of npm-autolink works very differently than v0 :
+
+- only one conf file is loaded `autolink.json`
+- you can link and unlink many projects at the same time
+
+> Tests are coming ...
+
 ## Installation
+
 ```sh
 npm install -g npm-autolink
 ```
 
-## .autolink files
-- File containing your glob patterns / paths to your package.json files
-- npm-autolink will recursively look for .autolink files in your parent folders
-- One line per pattern
-- Glob patterns are relatives to .autolink dir
+## autolink.json file
 
-### Example *.autolink* file:
+- describe linked projects in your workspace
+- `npm link` will only link those projects
+
+### Example _autolink.json_ file:
+
 ```
-dev/*/package.json
-dev/bigproject/*/package.json
+{
+  "link": {
+    "@iamasoft/project1": ["@iamasoft/lib1"],
+    "@iamasoft/lib1": ["@iamasoft/lib2"],
+  }
+}
 ```
 
-### Scan everything :
-```
-**/package.json
-```
-
-**Note :** *node_modules* and *bower_components* folders are never scanned.
+**Note :** _node_modules_ and _bower_components_ folders are never scanned.
 
 ## Usage
 
-`npm-autolink [command] [options]`
+`npmauto [command] [options]`
 
 Print usage information
+
 ```sh
-$ npm-autolink -h
-$ npm-autolink --help
+$ npmauto -h
+$ npmauto --help
 ```
 
-List available dev packages
+List all detected packages in workspace and their states
+
 ```sh
-$ npm-autolink list
+$ npmauto ls
 ```
 
-Display current module links
+Link all
+
 ```sh
-$ npm-autolink
+$ npmauto link
 ```
 
-List packages matches that can be linked
-```sh
-$ npm-autolink matches
-```
+Unkink all
 
-Link node modules. Optional [id]
 ```sh
-$ npm-autolink link [id]
+$ npmauto unlink
 ```
-
-Remove symlinks. Optional [id]
-```sh
-$ npm-autolink remove [id]
-```
-
-## What if multiple versions of same module are found ?
-npm-autolink will respect package.json version ranges and if multiple candidates it will select the most recent version.

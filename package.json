@@ -1,7 +1,7 @@
 {
   "name": "npm-autolink",
-  "version": "1.0.0-alpha.1",
-  "description": "Npm link done right, automatically create symlinks between your dev folder",
+  "version": "1.0.0",
+  "description": "Npm link done right, automatically create symlinks between your workspace projects",
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha --compilers js:babel-register --reporter spec --bail --check-leaks test/",
@@ -16,7 +16,8 @@
     "link",
     "symlink",
     "autolink",
-    "auto"
+    "auto",
+    "workspace"
   ],
   "homepage": "https://github.com/adogor/npm-autolink",
   "repository": {
