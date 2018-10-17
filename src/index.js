@@ -233,6 +233,7 @@ async function linkModule(linkConf) {
     scope = scopeMatch[1];
   }
   const nodeModulesPath = path.join(linkConf.target.path, 'node_modules');
+  console.log(nodeModulesPath);
   var scopedPath = scope ? path.join(nodeModulesPath, scope) : nodeModulesPath;
   var targetPath = path.join(nodeModulesPath, linkConf.source.name);
   var binPath = path.join(nodeModulesPath, '.bin');
@@ -247,13 +248,15 @@ async function linkModule(linkConf) {
     console.log('package not installed');
   }
 
-  if (stat.isSymbolicLink()) {
-    //If symlink already exist then remove it
-    await fs.remove(targetPath);
-  } else {
-    //if real directory, remove backPath and rename
-    await fs.remove(backPath);
-    await fs.rename(targetPath, backPath);
+  if (stat) {
+    if (stat.isSymbolicLink()) {
+      //If symlink already exist then remove it
+      await fs.remove(targetPath);
+    } else {
+      //if real directory, remove backPath and rename
+      await fs.remove(backPath);
+      await fs.rename(targetPath, backPath);
+    }
   }
 
   await fs.ensureDir(scopedPath);
@@ -272,12 +275,12 @@ function linkBins(binPath, bins, sourcePath) {
         //var bakTargetLink = path.join(binPath, binName) + '.bak';
 
         var promise = fs
-          .removeAsync(targetLink)
+          .remove(targetLink)
           .then(function() {
-            return fs.symlinkAsync(sourceBin, targetLink);
+            return fs.symlink(sourceBin, targetLink);
           })
           .then(function() {
-            return fs.chmodAsync(targetLink, '755');
+            return fs.chmod(targetLink, '755');
           });
 
         res.push(promise);
